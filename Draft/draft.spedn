@@ -1,0 +1,23 @@
+contract LockWithPublicKeyHash(pubKeyHash: Sha256(PublicKey), val: Value) {
+  clause spend(pubKey: PublicKey, sig: Signature) {
+    verify sha256(pubKey) == pubKeyHash
+    verify checkSig(pubKey, sig)
+    unlock val
+  }
+}
+contract VaultSpend(
+  hotKey: PublicKey,
+  coldKey: PublicKey,
+  delay: Duration,
+  val: Value
+) {
+  clause cancel(sig: Signature) {
+    verify checkSig(coldKey, sig)
+    unlock val
+  }
+  clause complete(sig: Signature) {
+    verify older(delay)
+    verify checkSig(hotKey, sig)
+    unlock val
+  }
+}
